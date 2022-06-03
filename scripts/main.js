@@ -6,9 +6,9 @@
 			editor.setMathML(sMathML);
 	};
 
-	function render_formula(sMathML){
+	function render_formula(sMathML, sImgFormat){
 		var oReq = new XMLHttpRequest();
-		oReq.open("POST", 'https://www.wiris.net/demo/editor/render.png', true);
+		oReq.open("POST", 'https://www.wiris.net/demo/editor/render.' + sImgFormat, true);
 		oReq.responseType = 'blob';
 		oReq.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded');
 		
@@ -23,7 +23,7 @@
 
 					var sMethod = (oInfo.objectId === undefined) ? "AddOleObject" : "EditOleObject";
 					
-					var _param = {
+					var oParams = {
 						guid:      oInfo.guid,
 						widthPix:  (oInfo.mmToPx * oImg.width) >> 0,
 						heightPix: (oInfo.mmToPx * oImg.height) >> 0,
@@ -35,7 +35,7 @@
 						resize:    oInfo.resize
 					};
 
-					window.Asc.plugin.executeMethod(sMethod, [_param]);
+					add_in_document(sMethod, oParams);
 				};
 				
 				oImg.src = base64data;
@@ -48,9 +48,14 @@
 		}));
 	}
 
-	function paste_formula(){
+	function add_in_document(sMethod, oParams){
+		window.Asc.plugin.executeMethod(sMethod, [oParams]);
+	}
+	function paste_formula(sImgFormat){
+		if (!sImgFormat)
+			sImgFormat = "png";
 		var sMathML = editor.getMathML();
-		var oPng = render_formula(sMathML);
+		render_formula(sMathML, sImgFormat);
 	}
 
 	$(document).ready(function () {
