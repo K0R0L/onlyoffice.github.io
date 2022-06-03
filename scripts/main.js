@@ -1,6 +1,7 @@
 (function(window, undefined){
 	window.Asc.plugin.init = function(sMathML)
 	{
+		window.Asc.plugin.resizeWindow(600, 310, 600, 395, 0, 0);
 		if (sMathML !== "")
 			editor.setMathML(sMathML);
 	};
@@ -78,4 +79,6 @@
 
 		document.dispatchEvent(evt);
 	};
+
+	window.Asc.plugin.onRe
 })(window, undefined);
