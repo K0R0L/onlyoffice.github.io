@@ -66,6 +66,8 @@
 				toolbar: "chemistry"
 			});
 		}
+		$('.wrs_tickContainer').remove();
+
 	})
 
 	window.Asc.plugin.button = function(id)
@@ -85,5 +87,4 @@
 		document.dispatchEvent(evt);
 	};
 
-	window.Asc.plugin.onRe
 })(window, undefined);
