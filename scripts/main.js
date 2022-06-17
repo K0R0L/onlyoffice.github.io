@@ -4,6 +4,8 @@
 		window.Asc.plugin.resizeWindow(600, 310, 600, 395, 0, 0);
 		if (sMathML !== "")
 			editor.setMathML(sMathML);
+
+		$('.wrs_tickContainer').remove();
 	};
 
 	function render_formula(sMathML, sImgFormat){
@@ -66,9 +68,7 @@
 				toolbar: "chemistry"
 			});
 		}
-		$('.wrs_tickContainer').remove();
-
-	})
+	});
 
 	window.Asc.plugin.button = function(id)
 	{
