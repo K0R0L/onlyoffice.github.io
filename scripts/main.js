@@ -67,17 +67,25 @@
 					var oInfo = window.Asc.plugin.info;
 
 					var sMethod = (oInfo.objectId === undefined) ? "AddOleObject" : "EditOleObject";
+
 					var nFormulaSourceHeight = editor.editorModel.formulaModel.getHeight();
+					var nFormulaSourceWidth = editor.editorModel.formulaModel.getWidth();
 					var nBaseLineFromTop = editor.editorModel.getFormulaBaseline();
-					var nRelBaseLine = 1 - nBaseLineFromTop / nFormulaSourceHeight;
+
+					var nPositionMM = -((nFormulaSourceHeight - nBaseLineFromTop) / (oInfo.mmToPx))
+					var nPosition =  2 * (nPositionMM / (25.4 / 72.0)) + (nPositionMM / (25.4 / 72.0)); // convert to hps
+
+					// var nPositionMM = -((nFormulaSourceHeight - (nFormulaSourceHeight - nBaseLineFromTop)) / oInfo.mmToPx) ; // for centerbaseline
+					// var nPositionMM2 = 2 * (nPositionMM / (25.4 / 72.0)) ; // convert to hps
+					// var nHeightInPxCenterBaseLine = (nFormulaSourceHeight - (nFormulaSourceHeight - nBaseLineFromTop)) * 2;
+					// nFormulaSourceHeight = nFormulaSourceHeight  + nBaseLineFromTop - nHeightInPxCenterBaseLine / 2
 
 					var oParams = {
 						guid:      oInfo.guid,
-						position:  -((oImg.height * nRelBaseLine) / (oInfo.mmToPx * 6)),
-						widthPix:  (oInfo.mmToPx * oImg.width) >> 0,
-						heightPix: (oInfo.mmToPx * oImg.height) >> 0,
-						width:     (oImg.width / oInfo.mmToPx) / 6,
-						height:    (oImg.height / oInfo.mmToPx) / 6,
+						position:  nPosition, 
+						width:     sMethod === "AddOleObject" ? (nFormulaSourceWidth / oInfo.mmToPx) * 36000.0 : nFormulaSourceWidth / oInfo.mmToPx,
+						height:    sMethod === "AddOleObject" ? (nFormulaSourceHeight / oInfo.mmToPx) * 36000.0 : nFormulaSourceHeight / oInfo.mmToPx,
+						//height:    (nHeightInPxCenterBaseLine / oInfo.mmToPx) * 36000.0, // convert to EMU
 						imgSrc:    base64data,
 						data:      sMathML,
 						objectId:  oInfo.objectId,
@@ -97,9 +105,36 @@
 		}));
 	}
 
-	function add_in_document(sMethod, oParams){
-		window.Asc.plugin.executeMethod(sMethod, [oParams]);
+	function add_in_document(sMethod, oParams) {
+		//window.Asc.plugin.executeMethod("GetVersion", [], function(version) {
+		//	console.log(version);
+		//});
+
+		if (sMethod === "AddOleObject") {
+			window.Asc.scope.params = oParams;
+
+			window.Asc.plugin.callCommand(function() {
+				var oDocument = Api.GetDocument();
+				var oOleObject = Api.CreateOleObject(Asc.scope.params.imgSrc, Asc.scope.params.width, Asc.scope.params.height, Asc.scope.params.data, Asc.scope.params.guid);
+				var oPara = Api.CreateParagraph();
+				var oRun = Api.CreateRun();
+				oRun.SetPosition(Asc.scope.params.position);
+				
+				oRun.AddDrawing(oOleObject);
+				oPara.Push(oRun);
+				
+				oDocument.InsertContent([oPara], true);
+			}, undefined, undefined, function(e) {
+				console.log(e);
+			});
+		}
+		else {
+			window.Asc.plugin.executeMethod(sMethod, [oParams], function() {
+				window.Asc.plugin.executeCommand("close", "");
+			});
+		}
 	}
+	
 	function paste_formula(sImgFormat){
 		if (!sImgFormat)
 			sImgFormat = "png";
