@@ -110,7 +110,7 @@
 			var nMajorV = Number(version.split('.')[0]);
 			var nMinorV = Number(version.split('.')[1]);
 			if (sMethod === "AddOleObject") {
-				if (version === "1" || (nMajorV >= 7 && nMinorV >= 2)) {
+				if (version === "1" || (nMajorV >= 7 && nMinorV >= 2) && window.Asc.plugin.info.editorType === "word") {
 					window.Asc.scope.params = oParams;
 
 					window.Asc.plugin.callCommand(function() {
@@ -134,12 +134,14 @@
 				else {
 					oParams.height = oParams.height / 36000.0;
 					oParams.width  = oParams.width / 36000.0;
-					window.Asc.plugin.executeMethod(sMethod, [oParams], function() {
-						window.Asc.plugin.executeCommand("close", "");
-					});
+					window.Asc.plugin.executeMethod(sMethod, [oParams]);
 				}
 			}
+			// EditOleObject
 			else {
+				oParams.height = oParams.height / 36000.0;
+				oParams.width  = oParams.width / 36000.0;
+
 				window.Asc.plugin.executeMethod(sMethod, [oParams], function() {
 					window.Asc.plugin.executeCommand("close", "");
 				});
