@@ -110,7 +110,7 @@
 			var nMajorV = Number(version.split('.')[0]);
 			var nMinorV = Number(version.split('.')[1]);
 			if (sMethod === "AddOleObject") {
-				if (version === "1" || (nMajorV >= 7 && nMinorV >= 2) && window.Asc.plugin.info.editorType === "word") {
+				if ((version === "develop" || (nMajorV >= 7 && nMinorV >= 2)) && window.Asc.plugin.info.editorType === "word") {
 					window.Asc.scope.params = oParams;
 
 					window.Asc.plugin.callCommand(function() {
@@ -127,8 +127,6 @@
 						oPara.Push(oRun);
 						
 						oDocument.InsertContent([oPara], true);
-					}, undefined, undefined, function(e) {
-						console.log(e);
 					});
 				}
 				else {
