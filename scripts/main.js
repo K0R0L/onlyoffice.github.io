@@ -106,33 +106,45 @@
 	}
 
 	function add_in_document(sMethod, oParams) {
-		//window.Asc.plugin.executeMethod("GetVersion", [], function(version) {
-		//	console.log(version);
-		//});
+		window.Asc.plugin.executeMethod("GetVersion", [], function(version) {
+			var nMajorV = Number(version.split('.')[0]);
+			var nMinorV = Number(version.split('.')[1]);
+			if (sMethod === "AddOleObject") {
+				if (version === "1" || (nMajorV >= 7 && nMinorV >= 2)) {
+					window.Asc.scope.params = oParams;
 
-		if (sMethod === "AddOleObject") {
-			window.Asc.scope.params = oParams;
-
-			window.Asc.plugin.callCommand(function() {
-				var oDocument = Api.GetDocument();
-				var oOleObject = Api.CreateOleObject(Asc.scope.params.imgSrc, Asc.scope.params.width, Asc.scope.params.height, Asc.scope.params.data, Asc.scope.params.guid);
-				var oPara = Api.CreateParagraph();
-				var oRun = Api.CreateRun();
-				oRun.SetPosition(Asc.scope.params.position);
-				
-				oRun.AddDrawing(oOleObject);
-				oPara.Push(oRun);
-				
-				oDocument.InsertContent([oPara], true);
-			}, undefined, undefined, function(e) {
-				console.log(e);
-			});
-		}
-		else {
-			window.Asc.plugin.executeMethod(sMethod, [oParams], function() {
-				window.Asc.plugin.executeCommand("close", "");
-			});
-		}
+					window.Asc.plugin.callCommand(function() {
+						var oDocument = Api.GetDocument();
+						if (!Api.CreateOleObject)
+							return false;
+							
+						var oOleObject = Api.CreateOleObject(Asc.scope.params.imgSrc, Asc.scope.params.width, Asc.scope.params.height, Asc.scope.params.data, Asc.scope.params.guid);
+						var oPara = Api.CreateParagraph();
+						var oRun = Api.CreateRun();
+						oRun.SetPosition(Asc.scope.params.position);
+						
+						oRun.AddDrawing(oOleObject);
+						oPara.Push(oRun);
+						
+						oDocument.InsertContent([oPara], true);
+					}, undefined, undefined, function(e) {
+						console.log(e);
+					});
+				}
+				else {
+					oParams.height = oParams.height / 36000.0;
+					oParams.width  = oParams.width / 36000.0;
+					window.Asc.plugin.executeMethod(sMethod, [oParams], function() {
+						window.Asc.plugin.executeCommand("close", "");
+					});
+				}
+			}
+			else {
+				window.Asc.plugin.executeMethod(sMethod, [oParams], function() {
+					window.Asc.plugin.executeCommand("close", "");
+				});
+			}
+		});
 	}
 	
 	function paste_formula(sImgFormat){
