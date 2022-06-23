@@ -83,9 +83,9 @@
 					var oParams = {
 						guid:      oInfo.guid,
 						position:  nPosition, 
-						width:     sMethod === "AddOleObject" ? (nFormulaSourceWidth / oInfo.mmToPx) * 36000.0 : nFormulaSourceWidth / oInfo.mmToPx,
-						height:    sMethod === "AddOleObject" ? (nFormulaSourceHeight / oInfo.mmToPx) * 36000.0 : nFormulaSourceHeight / oInfo.mmToPx,
-						//height:    (nHeightInPxCenterBaseLine / oInfo.mmToPx) * 36000.0, // convert to EMU
+						width:     nFormulaSourceWidth / oInfo.mmToPx,
+						height:    nFormulaSourceHeight / oInfo.mmToPx,
+						//height:    (nHeightInPxCenterBaseLine / oInfo.mmToPx)
 						imgSrc:    base64data,
 						data:      sMathML,
 						objectId:  oInfo.objectId,
@@ -111,8 +111,10 @@
 			var nMinorV = Number(version.split('.')[1]);
 			if (sMethod === "AddOleObject") {
 				if ((version === "develop" || (nMajorV >= 7 && nMinorV >= 2)) && window.Asc.plugin.info.editorType === "word") {
-					window.Asc.scope.params = oParams;
+					oParams.height = oParams.height * 36000.0; // convert to EMU
+					oParams.width  = oParams.width * 36000.0; // convert to EMU
 
+					window.Asc.scope.params = oParams;
 					window.Asc.plugin.callCommand(function() {
 						var oDocument = Api.GetDocument();
 						if (!Api.CreateOleObject)
@@ -130,16 +132,11 @@
 					});
 				}
 				else {
-					oParams.height = oParams.height / 36000.0;
-					oParams.width  = oParams.width / 36000.0;
 					window.Asc.plugin.executeMethod(sMethod, [oParams]);
 				}
 			}
 			// EditOleObject
 			else {
-				oParams.height = oParams.height / 36000.0;
-				oParams.width  = oParams.width / 36000.0;
-
 				window.Asc.plugin.executeMethod(sMethod, [oParams], function() {
 					window.Asc.plugin.executeCommand("close", "");
 				});
