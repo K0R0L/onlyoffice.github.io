@@ -15,3 +15,6 @@
 ## How to install
 
 Detailed instructions can be found in [ONLYOFFICE API documentation](https://api.onlyoffice.com/plugin/installation).
+
+## Known issues
+Plugin doesn't support desktop editors
