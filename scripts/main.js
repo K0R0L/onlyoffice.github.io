@@ -51,61 +51,33 @@
 			editor.setMathML(sMathML);
 	};
 
-	function render_formula(sMathML, sImgFormat){
-		var oReq = new XMLHttpRequest();
-		oReq.open("POST", 'https://www.wiris.net/demo/editor/render.' + sImgFormat, true);
-		oReq.responseType = 'blob';
-		oReq.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded');
-		
-		oReq.onload = function(e) {
-			var reader = new FileReader();
-			reader.readAsDataURL(this.response); 
-			reader.onloadend = function() {
-				var base64data = reader.result;
-				var oImg = new Image(); 
-				oImg.onload = function() {
-					var oInfo = window.Asc.plugin.info;
+	function getBase64Formula(sMathML, sImgFormat) {
 
-					var sMethod = (oInfo.objectId === undefined) ? "AddOleObject" : "EditOleObject";
-
-					var nFormulaSourceHeight = editor.editorModel.formulaModel.getHeight();
-					var nFormulaSourceWidth = editor.editorModel.formulaModel.getWidth();
-					var nBaseLineFromTop = editor.editorModel.getFormulaBaseline();
-
-					var nPositionMM = -((nFormulaSourceHeight - nBaseLineFromTop) / (oInfo.mmToPx))
-					var nPosition =  2 * (nPositionMM / (25.4 / 72.0)) + (nPositionMM / (25.4 / 72.0)); // convert to hps
-
-					// var nPositionMM = -((nFormulaSourceHeight - (nFormulaSourceHeight - nBaseLineFromTop)) / oInfo.mmToPx) ; // for centerbaseline
-					// var nPositionMM2 = 2 * (nPositionMM / (25.4 / 72.0)) ; // convert to hps
-					// var nHeightInPxCenterBaseLine = (nFormulaSourceHeight - (nFormulaSourceHeight - nBaseLineFromTop)) * 2;
-					// nFormulaSourceHeight = nFormulaSourceHeight  + nBaseLineFromTop - nHeightInPxCenterBaseLine / 2
-
-					var oParams = {
-						guid:      oInfo.guid,
-						position:  nPosition, 
-						width:     nFormulaSourceWidth / oInfo.mmToPx,
-						height:    nFormulaSourceHeight / oInfo.mmToPx,
-						//height:    (nHeightInPxCenterBaseLine / oInfo.mmToPx)
-						imgSrc:    base64data,
-						data:      sMathML,
-						objectId:  oInfo.objectId,
-						resize:    oInfo.resize
-					};
-
-					add_in_document(sMethod, oParams);
-				};
-				
-				oImg.src = base64data;
+		return new Promise(function(resolve, reject) {
+			let oReq = new XMLHttpRequest();
+			oReq.open("POST", 'https://www.wiris.net/demo/editor/render.' + sImgFormat, true);
+			oReq.responseType = 'blob';
+			oReq.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded');
+			
+			oReq.onload = function(e) {
+				var reader = new FileReader();
+				reader.readAsDataURL(this.response); 
+				reader.onloadend = function() {
+					resolve(reader.result);
+				}
 			}
-		}
-		oReq.send(jQuery.param({
-			mml: sMathML,
-			autozoom: true,
-			centerbaseline: false
-		}));
+			oReq.onerror = function(e) {
+				reject(e);
+			}
+			oReq.send(jQuery.param({
+				mml: sMathML,
+				autozoom: true,
+				centerbaseline: false
+			}));
+		});
 	}
 
-	function add_in_document(sMethod, oParams) {
+	function add_to_document(sMethod, oParams) {
 		window.Asc.plugin.executeMethod("GetVersion", [], function(version) {
 			var nMajorV = Number(version.split('.')[0]);
 			var nMinorV = Number(version.split('.')[1]);
@@ -144,11 +116,42 @@
 		});
 	}
 	
-	function paste_formula(sImgFormat){
-		if (!sImgFormat)
-			sImgFormat = "png";
+	function paste_formula(){
 		var sMathML = editor.getMathML();
-		render_formula(sMathML, sImgFormat);
+		let sBase64png = await getBase64Formula(sMathML, "png");
+		let sBase64svg = await getBase64Formula(sMathML, "svg");
+		
+		var oImg = new Image(); 
+		oImg.onload = function() {
+			var oInfo = window.Asc.plugin.info;
+
+			var sMethod = (oInfo.objectId === undefined) ? "AddOleObject" : "EditOleObject";
+
+			var nFormulaSourceHeight = editor.editorModel.formulaModel.getHeight();
+			var nFormulaSourceWidth = editor.editorModel.formulaModel.getWidth();
+			var nBaseLineFromTop = editor.editorModel.getFormulaBaseline();
+
+			var nPositionMM = -((nFormulaSourceHeight - nBaseLineFromTop) / (oInfo.mmToPx))
+			var nPosition =  2 * (nPositionMM / (25.4 / 72.0)) + (nPositionMM / (25.4 / 72.0)); // convert to hps
+
+			var oParams = {
+				guid:      oInfo.guid,
+				position:  nPosition, 
+				width:     nFormulaSourceWidth / oInfo.mmToPx,
+				height:    nFormulaSourceHeight / oInfo.mmToPx,
+				imgSrc:    sBase64png,
+				data:      {
+					data1: sMathML,
+					data2: sBase64svg
+				},
+				objectId:  oInfo.objectId,
+				resize:    oInfo.resize
+			};
+
+			add_to_document(sMethod, oParams);
+		};
+		
+		oImg.src = sBase64png;
 	}
 
 	window.Asc.plugin.button = function(id)
