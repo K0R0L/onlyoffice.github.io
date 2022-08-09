@@ -116,10 +116,10 @@
 		});
 	}
 	
-	function paste_formula(){
+	async function paste_formula(){
 		var sMathML = editor.getMathML();
 		let sBase64png = await getBase64Formula(sMathML, "png");
-		let sBase64svg = await getBase64Formula(sMathML, "svg");
+		//let sBase64svg = await getBase64Formula(sMathML, "svg");
 		
 		var oImg = new Image(); 
 		oImg.onload = function() {
@@ -140,10 +140,7 @@
 				width:     nFormulaSourceWidth / oInfo.mmToPx,
 				height:    nFormulaSourceHeight / oInfo.mmToPx,
 				imgSrc:    sBase64png,
-				data:      {
-					data1: sMathML,
-					data2: sBase64svg
-				},
+				data:      sMathML,
 				objectId:  oInfo.objectId,
 				resize:    oInfo.resize
 			};
