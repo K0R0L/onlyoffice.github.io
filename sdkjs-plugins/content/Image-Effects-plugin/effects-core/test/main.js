@@ -302,7 +302,8 @@
         window.Asc.plugin.executeMethod("GetVersion", [], function(version) {
             const ver = version.split('.');
             console.log(ver);
-            if (+ver[0] <= 7 && +ver[1] < 2) {
+            console.log(+ver[0] + +ver[1]);
+            if (+ver[0] + +ver[1] < 720) {
                 handleFiles(wrapper.querySelector('img'));
             } else {
                 window.Asc.plugin.executeMethod("GetImageDataFromSelection", [], function(data) {
