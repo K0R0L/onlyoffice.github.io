@@ -303,7 +303,7 @@
             const ver = version.split('.');
             console.log(ver);
             console.log(+ver[0] + +ver[1]);
-            if (+ver[0] + +ver[1] < 71) {
+            if (+ver[0]*10 + +ver[1] < 71) {
                 handleFiles(wrapper.querySelector('img'));
             } else {
                 window.Asc.plugin.executeMethod("GetImageDataFromSelection", [], function(data) {
