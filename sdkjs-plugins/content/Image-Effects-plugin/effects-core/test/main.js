@@ -8,7 +8,7 @@
     window.Asc.plugin.onTranslate = function() {
         const labels = document.querySelectorAll('.onTranslate');
         Array.prototype.forEach.call(labels, function(item) {
-            item.innerHTML = window.Asc.plugin.tr(item.parentElement.id);
+            item.innerHTML = window.Asc.plugin.tr(item.innerHTML);
         });
     };
     window.ImageEffects.isWorker = true;
