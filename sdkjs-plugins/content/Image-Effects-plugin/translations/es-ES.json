@@ -1,0 +1,13 @@
+{
+    "no-image": "Por favor, elija la imagen",
+    "sepia": "Sepia",
+    "brightness": "Brillo",
+    "saturation": "Saturación",
+    "hue": "Tono",
+    "transparency": "Transparencia",
+    "shades_of_gray": "Blanco y negro",
+    "lighting": "Rayo",
+    "intension_red": "Intensidad del rojo",
+    "intension_green": "Intensidad verde",
+    "intension_blue": "Intensidad azul"
+}
