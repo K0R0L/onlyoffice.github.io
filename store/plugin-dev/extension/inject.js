@@ -1,5 +1,5 @@
 (function(window, undefined) {
-	var URL_TO_PLUGIN = "";
+	var URL_TO_PLUGIN = "https://sandiegoss.github.io/onlyoffice.github.io/sdkjs-plugins/content/effects/";
 	
 	var xhrObj = new XMLHttpRequest();
 	xhrObj.open('GET', URL_TO_PLUGIN + "config.json", false);
