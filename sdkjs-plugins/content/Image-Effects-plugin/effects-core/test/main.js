@@ -363,7 +363,7 @@
                 };
             } else {
                 console.log('keka');
-                window.Asc.plugin.executeMethod("PutImageDataFromSelection", [
+                window.Asc.plugin.executeMethod("PutImageDataToSelection", [
                     {src: window.Asc.scope.dataURL,
                     width: window.Asc.scope.width,
                     height: window.Asc.scope.height}],
