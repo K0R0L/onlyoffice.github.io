@@ -301,6 +301,7 @@
         this.resizeWindow(800, 800, 300, 700, 1920, 1080);
         window.Asc.plugin.executeMethod("GetVersion", [], function(version) {
             const ver = version.split('.');
+            console.log(ver);
             if (+ver[0] <= 7 && +ver[1] < 2) {
                 handleFiles(wrapper.querySelector('img'));
             } else {
