@@ -309,8 +309,6 @@
                 window.Asc.plugin.executeMethod("GetImageDataFromSelection", [], function(data) {
                     const img = document.createElement('img');
                     img.src = data.src;
-                    window.Asc.scope.width = data.width;
-                    window.Asc.scope.height = data.height;
                     img.onload = function() {
                         handleFiles(img);
                     }
@@ -363,6 +361,8 @@
                 };
             } else {
                 console.log('keka');
+                window.Asc.scope.width = originCanvas.width;
+                window.Asc.scope.height = originCanvas.height;
                 window.Asc.plugin.executeMethod("PutImageDataToSelection", [
                     {src: window.Asc.scope.dataURL,
                     width: window.Asc.scope.width,
