@@ -1,13 +1,13 @@
 {
     "Please, select an image": "Por favor, elija la imagen",
-    "sepia": "Sepia",
-    "brightness": "Brillo",
-    "saturation": "Saturación",
-    "hue": "Tono",
-    "transparency": "Transparencia",
-    "shades_of_gray": "Blanco y negro",
-    "lighting": "Rayo",
-    "intension_red": "Intensidad del rojo",
-    "intension_green": "Intensidad verde",
-    "intension_blue": "Intensidad azul"
+    "Sepia": "Sepia",
+    "Brightness": "Brillo",
+    "Saturation": "Saturación",
+    "Hue": "Tono",
+    "Transparency": "Transparencia",
+    "B&W": "Blanco y negro",
+    "Lighting": "Rayo",
+    "Intension red": "Intensidad del rojo",
+    "Intension green": "Intensidad verde",
+    "Intension blue": "Intensidad azul"
 }
