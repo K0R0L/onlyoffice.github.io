@@ -14,14 +14,8 @@
     window.ImageEffects.isWorker = true;
     let isImageLoaded = false;
     const format = {
-        horizontal: {
             width: 663,
-            height: 373,
-        },
-        vertical: {
-            width: 218,
-            height: 373,
-        },
+            height: 373
     };
     /**
      * @param {HTMLDivElement} effectForm
@@ -146,51 +140,11 @@
 
     /* Drag n Drop */
     /**
-     * Показывает, откуда и сколько надо вырезать
-     * @param {HTMLImageElement} image
-     * @typedef {Object} Formatter
-     * @property {HTMLImageElement} image
-     * @property {Number} sx
-     * @property {Number} sy
-     * @property {Number} sWidth
-     * @property {Number} sHeight
-     * @return {Formatter}
-     */
-    function formatImage(image) {
-        const formatter = {
-            image: image,
-            sx: 0,
-            sy: 0,
-            sWidth: image.width,
-            sHeight: image.height,
-        };
-        if (image.height > image.width) {
-            formatter.sx = (image.width - (image.height * 9 / 16)) / 2;
-            formatter.sWidth = image.height * 9 / 16;
-            if (formatter.sx < 0) {
-                formatter.sx = 0;
-                formatter.sWidth = image.width;
-                formatter.sy = (image.height - (image.width * 16 / 9)) / 2;
-                formatter.sHeight = image.width * 16 / 9;
-            }
-        } else {
-            formatter.sy = (image.height - (image.width * 9 / 16)) / 2;
-            formatter.sHeight = image.width * 9 / 16;
-            if (formatter.sy < 0) {
-                formatter.sy = 0;
-                formatter.sHeight = image.height;
-                formatter.sx = (image.width - (image.height * 16 / 9)) / 2;
-                formatter.sWidth = image.height * 16 / 9;
-            }
-        }
-        return formatter;
-    }
-    /**
      */
     function resize() {
-        const isVertical = (effectCanvas.width < effectCanvas.height);
+        const aspect = (effectCanvas.width / effectCanvas.height);
         const rect = dropArea.parentElement.getBoundingClientRect();
-        const stRect = (isVertical) ? format.vertical.width : format.horizontal.width;
+        const stRect = format.height * aspect;
         const panels = document.getElementById('effects-content');
         if (panels.getBoundingClientRect().width < 510) {
             panels.style.flexDirection = 'column';
@@ -205,25 +159,15 @@
         if (isImageLoaded) {
             if (rect.width < stRect) {
                 dropArea.style.width = rect.width + 'px';
-                dropArea.style.height = (isVertical) ? rect.width * 16 / 9 + 'px' : rect.width * 9 / 16 + 'px';
+                dropArea.style.height = rect.width / aspect + 'px';
             } else {
-                dropArea.style.width = (isVertical) ? format.vertical.width + 'px' : format.horizontal.width + 'px';
-                dropArea.style.height = (isVertical) ? format.vertical.height + 'px' : format.horizontal.height + 'px';
+                dropArea.style.width = format.height * aspect + 'px';
+                dropArea.style.height = format.height + 'px';
             }
             effectCanvas.style.width = dropArea.style.width;
             effectCanvas.style.height = dropArea.style.height;
             return;
         }
-        const noImage = dropArea.firstElementChild;
-        if (rect.width < format.vertical.height) {
-            dropArea.style.width = rect.width + 'px';
-            dropArea.style.height = rect.width + 'px';
-        } else {
-            dropArea.style.width = format.vertical.height + 'px';
-            dropArea.style.height = format.vertical.height + 'px';
-        }
-        noImage.style.width = dropArea.style.width;
-        noImage.style.height = dropArea.style.height;
         return;
     }
     /**
@@ -232,22 +176,16 @@
     const imagePreview = function drawImageOnDisplay(preImage) {
         window.ImageEffects.originContext.clearRect(0, 0, originCanvas.width, originCanvas.height);
         window.ImageEffects.originContext.drawImage(preImage, 0, 0, originCanvas.width, originCanvas.height);
-        const formatter = formatImage(preImage);
-        effectCanvas.width = formatter.sWidth;
-        effectCanvas.height = formatter.sHeight;
 
-        resize();
         window.ImageEffects.effectContext.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-        window.ImageEffects.effectContext.drawImage(
-            formatter.image,
-            formatter.sx,
-            formatter.sy,
-            formatter.sWidth,
-            formatter.sHeight,
-            0,
-            0,
-            effectCanvas.width,
-            effectCanvas.height);
+        window.ImageEffects.effectContext.drawImage(preImage, 0, 0, effectCanvas.width, effectCanvas.height);
+
+        const aspect = preImage.width / preImage.height;
+        dropArea.style.height = format.height + 'px';
+        dropArea.style.width = format.height * aspect + 'px';
+
+        effectCanvas.style.height = dropArea.style.height;
+        effectCanvas.style.width = dropArea.style.width;
     };
     /**
      */
@@ -278,6 +216,9 @@
             originCanvas.width = image.width;
             originCanvas.height = image.height;
 
+            effectCanvas.width = image.width;
+            effectCanvas.height = image.height;
+
             imagePreview(image);
 
             window.ImageEffects.originImageData = window.ImageEffects.originContext.getImageData(0, 0, originCanvas.width, originCanvas.height);
@@ -290,6 +231,7 @@
         };
     };
     window.Asc.plugin.init = function(iHtml) {
+        window.ImageEffects.useOld = false;
         const wrapper = document.createElement('span');
         wrapper.innerHTML = iHtml;
         console.log(wrapper);
@@ -301,14 +243,20 @@
         this.resizeWindow(800, 800, 300, 700, 1920, 1080);
         window.Asc.plugin.executeMethod("GetVersion", [], function(version) {
             const ver = version.split('.');
-            console.log(ver);
-            console.log(+ver[0] + +ver[1]);
-            if (+ver[0]*10 + +ver[1] < 71) {
+            if (+ver[0]*10 + +ver[1] < 72) {
+                window.ImageEffects.useOld = true;
                 handleFiles(wrapper.querySelector('img'));
             } else {
                 window.Asc.plugin.executeMethod("GetImageDataFromSelection", [], function(data) {
+                    if (data === undefined) {
+                        window.ImageEffects.useOld = true;
+                        handleFiles(wrapper.querySelector('img'));
+                        return;
+                    }
                     const img = document.createElement('img');
                     img.src = data.src;
+                    window.Asc.scope.width = data.width;
+                    window.Asc.scope.height = data.height;
                     img.onload = function() {
                         handleFiles(img);
                     }
@@ -328,7 +276,7 @@
         console.log(originCanvas.width, originCanvas.height);
         window.Asc.plugin.executeMethod("GetVersion", [], function(version) {
             const ver = version.split('.');
-            if (+ver[0] <= 7 && +ver[1] < 2) {
+            if (+ver[0]*10 + +ver[1] < 72 || window.ImageEffects.useOld) {
                 window.Asc.scope.width = (originCanvas.width * 9525);
                 window.Asc.scope.height = (originCanvas.height * 9525);
                 switch (window.Asc.plugin.info.editorType) {
@@ -360,9 +308,6 @@
                     }
                 };
             } else {
-                console.log('keka');
-                window.Asc.scope.width = originCanvas.width;
-                window.Asc.scope.height = originCanvas.height;
                 window.Asc.plugin.executeMethod("PutImageDataToSelection", [
                     {src: window.Asc.scope.dataURL,
                     width: window.Asc.scope.width,
@@ -379,6 +324,7 @@
         setEffect(true);
     }
     // for debug in browser
+    // document.getElementById('effects-content').style.display = 'flex';
     // dropArea.addEventListener('drop', dropInput, false);
     // function dropInput(event) {
     //     const files = event.dataTransfer.files;
