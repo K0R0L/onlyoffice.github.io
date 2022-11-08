@@ -95,7 +95,7 @@
 			}
 			],
             "isViewer": false,
-            "EditorsSupport": [ "word", "slide", "cell" ],
+            "EditorsSupport": [ "word" ],
 
             "isVisual": true,
             "isModal": true,

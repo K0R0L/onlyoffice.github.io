@@ -19,6 +19,8 @@
 
 	var curLang;
     var oTheme = null;
+	var defaultLang = "en-US";
+	
 	// If you modify this array, also update default language / dialect below.
 	var langs =
 		[['Afrikaans',      [['af-ZA']]],
@@ -132,6 +134,44 @@
     }
 
 	window.Asc.plugin.init = function() {
+		switch (window.Asc.plugin.info.editorType) {
+            case 'word':
+            case 'slide': {
+                window.Asc.plugin.executeMethod("GetDocumentLang", [], function(lang) {
+                    let documentLang = lang || defaultLang;
+
+					let aOptions = Array.from($('#custom_menu option'));
+					let oDefaultOption = aOptions.find(function(item) {
+						if (item.value == defaultLang)
+							return item;
+					});
+
+					let oMatchOption = undefined;
+					// ищем по полному совпадению
+					oMatchOption = aOptions.find(function(item) {
+						if (item.value == documentLang)
+							return true;
+					});
+					// ищем на совпадению по осносному языку
+					if (!oMatchOption) {
+						oMatchOption = aOptions.find(function(item) {
+							if (item.value.search(documentLang.split('-')[0]) != -1)
+								return true;
+						});
+					}
+
+					if (!oMatchOption)
+						oMatchOption = oDefaultOption;
+
+					if (oMatchOption) {
+						$('#custom_menu').val(oMatchOption.value);
+						$('#custom_menu').trigger('change');
+					}
+                });
+                break;
+            }
+        }
+
 		if (!is_chrome) {
 			alert('Web Speech API is not supported by this browser. Please open it in Google Chrome browser.');
 			document.getElementById("div_main").style.display = "none";
@@ -151,7 +191,7 @@
                 for (var nDialect = 0; nDialect < languages[nLang].code.length; nDialect++) {
                     $("#custom_menu").append($("<option>", {
                         value: languages[nLang].code[nDialect][0],
-                        text: languages[nLang].text + '(' + languages[nLang].code[nDialect][1] + ')'
+                        text: languages[nLang].text + ' (' + languages[nLang].code[nDialect][1] + ')'
                     }));
                 }
             }
