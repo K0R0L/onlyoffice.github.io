@@ -125,8 +125,7 @@
 		['हिन्दी',             [['hi-IN']]],
 		['ภาษาไทย',         [['th-TH']]]];
 
-	var is_chrome = ((navigator.userAgent.indexOf("Chrome") !== -1) && (navigator.vendor.indexOf("Google Inc") !== -1)) ? true : false;
-    var	ignore_onend = true;
+	var	ignore_onend = true;
     var sLastResult = '';
 
     String.prototype.replaceAt = function(nIndex, sReplacement) {
@@ -172,7 +171,7 @@
             }
         }
 
-		if (!is_chrome) {
+		if (typeof(webkitSpeechRecognition) == "undefined") {
 			alert('Web Speech API is not supported by this browser. Please open it in Google Chrome browser.');
 			document.getElementById("div_main").style.display = "none";
 			return;
@@ -234,6 +233,11 @@
 			    $('#micro_img_path').toggleClass('recording_color');
 				$('#start_info').show();
 				$('#speak_info').hide();
+				if (event.error == 'network') {
+					alert('Error with connection to recognition service of this browser, please use the Chrome browser');
+					window.Asc.plugin.executeCommand("close", "");
+				}
+					
 				if (event.error == 'no-speech') {
 					alert('No speech was detected. You may need to adjust your microphone settings.');
 				}
