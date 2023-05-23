@@ -26,29 +26,48 @@
 		"tr-TR": "tr"
 	}
 
-	var isLoaded = false;
-	var plugin_lang = "en";
+	var genericIntegrationInstance;
+	var mathML;
+	var oEditor;
 
 	window.Asc.plugin.init = function(sMathML)
 	{
-		if (langs_map[window.Asc.plugin.info.lang] != undefined)
-			plugin_lang = langs_map[window.Asc.plugin.info.lang];
+		mathML = sMathML;
 
-		if (!isLoaded) {
-			
-			editor = com.wiris.jsEditor.JsEditor.newInstance({'language': plugin_lang});
-        	editor.insertInto(document.getElementById('editorContainer'));
+		let onLoadFunc = function() {
+			if (mathML)
+				genericIntegrationInstance.core.contentManager.setMathML(mathML);
 
-			if (window.location.href.search("type=chemistry") !== -1) {
-				editor.setParams({
-					toolbar: "chemistry"
-				});
-			}
+			oEditor = genericIntegrationInstance.core.contentManager.editor;
 		}
 
-		window.Asc.plugin.resizeWindow(600, 310, 600, 395, 0, 0);
-		if (sMathML !== "")
-			editor.setMathML(sMathML);
+		var genericIntegrationProperties = {};
+		genericIntegrationProperties.target = document.getElementById('htmlEditor');
+		genericIntegrationProperties.toolbar = document.getElementById('toolbar');
+		
+		genericIntegrationInstance = new WirisPlugin.GenericIntegration(genericIntegrationProperties);
+
+		// setting language
+		if (langs_map[window.Asc.plugin.info.lang] != undefined) {
+			genericIntegrationInstance.editorParameters = { language: langs_map[window.Asc.plugin.info.lang] };
+		}
+		
+		genericIntegrationInstance.init();
+		genericIntegrationInstance.listeners.fire('onTargetReady', {});
+		
+		WirisPlugin.currentInstance = this.wiris_generic;
+
+		if (window.location.href.search("type=chemistry") !== -1) {
+			const A = genericIntegrationInstance.getCore().getCustomEditors();
+			A.enable("chemistry"),
+			genericIntegrationInstance.openNewFormulaEditor()
+		}
+		else {
+			genericIntegrationInstance.core.getCustomEditors().disable();
+			genericIntegrationInstance.openNewFormulaEditor();
+		}
+
+		genericIntegrationInstance.core.contentManager.listeners.add({eventName: "onLoad", callback: onLoadFunc});
 	};
 
 	function getBase64Formula(sMathML, sImgFormat) {
@@ -117,7 +136,7 @@
 	}
 	
 	async function paste_formula(){
-		var sMathML = editor.getMathML();
+		var sMathML = oEditor.getMathML();
 		let sBase64png = await getBase64Formula(sMathML, "png");
 		//let sBase64svg = await getBase64Formula(sMathML, "svg");
 		
@@ -127,9 +146,9 @@
 
 			var sMethod = (oInfo.objectId === undefined) ? "AddOleObject" : "EditOleObject";
 
-			var nFormulaSourceHeight = editor.editorModel.formulaModel.getHeight();
-			var nFormulaSourceWidth = editor.editorModel.formulaModel.getWidth();
-			var nBaseLineFromTop = editor.editorModel.getFormulaBaseline();
+			var nFormulaSourceHeight = oEditor.editorModel.formulaModel.getHeight();
+			var nFormulaSourceWidth = oEditor.editorModel.formulaModel.getWidth();
+			var nBaseLineFromTop = oEditor.editorModel.getFormulaBaseline();
 
 			var nPositionMM = -((nFormulaSourceHeight - nBaseLineFromTop) / (oInfo.mmToPx))
 			var nPosition =  2 * (nPositionMM / (25.4 / 72.0)) + (nPositionMM / (25.4 / 72.0)); // convert to hps

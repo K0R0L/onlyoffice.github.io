@@ -22,16 +22,22 @@
 	<script type="text/javascript" src="https://onlyoffice.github.io/sdkjs-plugins/v1/plugins-ui.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
     <script src="./scripts/main.js"></script>
-    <script src="https://www.wiris.net/demo/editor/editor"></script>
+    <script src="vendor/mathtype/wirisplugin-generic.js"></script>
     <link rel="stylesheet" href="https://onlyoffice.github.io/sdkjs-plugins/v1/plugins.css">
 
     <style>
-        html, body, #editorContainer {
+        html, body {
             height: 100%;
         }
+
+        .wrs_modal_buttons_container {
+            display: none;
+        }
+
     </style>
 </head>
     <body>
-        <div id="editorContainer"></div>
+        <div id="toolbar"></div>
+        <div id="htmlEditor" contenteditable="true"></div>
     </body>
 </html>
