@@ -68,33 +68,10 @@
 		}
 
 		genericIntegrationInstance.core.contentManager.listeners.add({eventName: "onLoad", callback: onLoadFunc});
+
+		
+		WirisPlugin.Configuration.properties.saveMode = "base64";
 	};
-
-	function getBase64Formula(sMathML, sImgFormat) {
-
-		return new Promise(function(resolve, reject) {
-			let oReq = new XMLHttpRequest();
-			oReq.open("POST", 'https://www.wiris.net/demo/editor/render.' + sImgFormat, true);
-			oReq.responseType = 'blob';
-			oReq.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded');
-			
-			oReq.onload = function(e) {
-				var reader = new FileReader();
-				reader.readAsDataURL(this.response); 
-				reader.onloadend = function() {
-					resolve(reader.result);
-				}
-			}
-			oReq.onerror = function(e) {
-				reject(e);
-			}
-			oReq.send(jQuery.param({
-				mml: sMathML,
-				autozoom: true,
-				centerbaseline: false
-			}));
-		});
-	}
 
 	function add_to_document(sMethod, oParams) {
 		window.Asc.plugin.executeMethod("GetVersion", [], function(version) {
@@ -135,12 +112,16 @@
 		});
 	}
 	
-	async function paste_formula(){
-		var sMathML = oEditor.getMathML();
-		let sBase64png = await getBase64Formula(sMathML, "png");
-		//let sBase64svg = await getBase64Formula(sMathML, "svg");
+	async function paste_formula() {
+		function createHTMLElementFromString(htmlString) {
+			var div = document.createElement('div');
+			div.innerHTML = htmlString.trim();
+			return div.firstChild;
+		}
 		
-		var oImg = new Image(); 
+		var sMathML = oEditor.getMathML();
+		var oImg = createHTMLElementFromString(WirisPlugin.Parser.initParse(sMathML)); 
+
 		oImg.onload = function() {
 			var oInfo = window.Asc.plugin.info;
 
@@ -153,12 +134,23 @@
 			var nPositionMM = -((nFormulaSourceHeight - nBaseLineFromTop) / (oInfo.mmToPx))
 			var nPosition =  2 * (nPositionMM / (25.4 / 72.0)) + (nPositionMM / (25.4 / 72.0)); // convert to hps
 
+			this.width *= 5;
+			this.height *= 5;
+
+			let canvas = document.createElement("canvas");
+			canvas.width = this.width;
+			canvas.height = this.height;
+
+			let oCtx = canvas.getContext('2d');
+			oCtx.drawImage(this, 0, 0, canvas.width, canvas.height);
+			let base64png = canvas.toDataURL();
+
 			var oParams = {
 				guid:      oInfo.guid,
 				position:  nPosition, 
 				width:     nFormulaSourceWidth / oInfo.mmToPx,
 				height:    nFormulaSourceHeight / oInfo.mmToPx,
-				imgSrc:    sBase64png,
+				imgSrc:    base64png,
 				data:      sMathML,
 				objectId:  oInfo.objectId,
 				resize:    oInfo.resize
@@ -166,8 +158,6 @@
 
 			add_to_document(sMethod, oParams);
 		};
-		
-		oImg.src = sBase64png;
 	}
 
 	window.Asc.plugin.button = function(id)
