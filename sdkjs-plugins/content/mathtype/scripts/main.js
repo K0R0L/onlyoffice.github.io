@@ -68,9 +68,10 @@
 		}
 
 		genericIntegrationInstance.core.contentManager.listeners.add({eventName: "onLoad", callback: onLoadFunc});
-
-		
 		WirisPlugin.Configuration.properties.saveMode = "base64";
+
+		window.Asc.plugin.resizeWindow(600, 310, 600, 395, 0, 0);
+		$('.asc-window.advanced-settings-dlg.notransform').onRe
 	};
 
 	function add_to_document(sMethod, oParams) {
