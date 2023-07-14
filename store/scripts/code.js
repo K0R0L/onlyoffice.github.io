@@ -229,6 +229,7 @@ window.addEventListener('message', function(message) {
 
 			installed.obj.version = plugin.version;
 			plugin.bHasUpdate = false;
+			installed.obj.bHasUpdate = false;
 
 			if (!elements.divSelected.classList.contains('hidden')) {
 				this.document.getElementById('btn_update').classList.add('hidden');
@@ -1351,6 +1352,7 @@ function showMarketplace() {
 	// show main window to user
 	if (!isPluginLoading && !isTranslationLoading && !isFrameLoading && installedPlugins) {
 		createSelect();
+		checkUpdate();
 		if (isOnline)
 			showListofPlugins(isOnline);
 		else {
@@ -1777,6 +1779,29 @@ function parseRatingPage(data) {
 	} else {
 		return null;
 	}
+};
+
+function checkUpdate() {
+	installedPlugins.forEach(function(installed) {
+		const plugin = findPlugin(true, installed.guid);
+		if (plugin) {
+			const minV = (plugin.minVersion ? getPluginVersion(plugin.minVersion) : -1);
+			if (minV < editorVersion) {
+				const installedV = getPluginVersion(installed.obj.version);
+				const lastV = getPluginVersion(plugin.version);
+				if (lastV > installedV) {
+					plugin.bHasUpdate = installed.obj.bHasUpdate = false;
+					updateCount++;
+				} else {
+					plugin.bHasUpdate = installed.obj.bHasUpdate = false;
+				}
+			} else {
+				plugin.bHasUpdate = installed.obj.bHasUpdate = false;
+			}
+		}
+	});
+	if (updateCount)
+		elements.btnUpdateAll.classList.remove('hidden');
 };
 
 function checkNoUpdated(bRemove) {
