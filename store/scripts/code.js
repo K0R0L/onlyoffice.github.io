@@ -1790,7 +1790,7 @@ function checkUpdate() {
 				const installedV = getPluginVersion(installed.obj.version);
 				const lastV = getPluginVersion(plugin.version);
 				if (lastV > installedV) {
-					plugin.bHasUpdate = installed.obj.bHasUpdate = false;
+					plugin.bHasUpdate = installed.obj.bHasUpdate = true;
 					updateCount++;
 				} else {
 					plugin.bHasUpdate = installed.obj.bHasUpdate = false;
