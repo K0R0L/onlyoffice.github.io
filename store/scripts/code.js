@@ -1782,6 +1782,7 @@ function parseRatingPage(data) {
 };
 
 function checkUpdate() {
+	console.log('checkUpdate');
 	installedPlugins.forEach(function(installed) {
 		const plugin = findPlugin(true, installed.guid);
 		if (plugin) {
