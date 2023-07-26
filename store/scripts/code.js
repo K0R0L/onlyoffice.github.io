@@ -764,31 +764,19 @@ function createPluginDiv(plugin, bInstalled) {
 		plugin = findPlugin(true, plugin.guid);
 	}
 
-	let bCheckUpdate = true;
 	if (!plugin) {
 		plugin = installed.obj;
-		bCheckUpdate = false;
 	}
 
 	let bNotAvailable = false;
 	const minV = (plugin.minVersion ? getPluginVersion(plugin.minVersion) : -1);
 	if (minV > editorVersion) {
-		bCheckUpdate = false;
 		bNotAvailable = true;
 	}
 
-	let bHasUpdate = false;
 	let bRemoved = (installed && installed.removed);
-	if (bCheckUpdate && installed && plugin) {
-		const installedV = getPluginVersion(installed.obj.version);
-		const lastV = getPluginVersion(plugin.version);
-		if (lastV > installedV) {
-			bHasUpdate = true;
-			plugin.bHasUpdate = true;
-			if (!bRemoved)
-				elements.btnUpdateAll.classList.remove('hidden');
-		}
-	}
+	if (plugin.bHasUpdate && !bRemoved)
+		elements.btnUpdateAll.classList.remove('hidden');
 	
 	let variation = plugin.variations[0];
 	let name = (bTranslate && plugin.nameLocale && plugin.nameLocale[shortLang]) ? plugin.nameLocale[shortLang] : plugin.name;
@@ -808,7 +796,7 @@ function createPluginDiv(plugin, bInstalled) {
 								? '<div class="flex div_rating_card"> <div class="div_rating"> <div class="stars_grey"></div> <div class="stars_orange" style="width:' + plugin.rating.percent + ';"></div> </div> <span style="margin-left: 5px;">' + plugin.rating.total + '</span> </div>'
 								: '<div class="flex div_rating_card"> <div class="div_rating"> <div class="stars_grey"></div> <div class="stars_orange" style="width:0;"></div> </div> <span style="margin-left: 5px;"></span> </div>'
 							) +
-							(bHasUpdate
+							(plugin.bHasUpdate
 								? '<span class="span_update ' + (!bRemoved ? "" : "hidden") + '">' + getTranslated("Update") + '</span>'
 								: '<div></div>'
 							) +
@@ -1029,7 +1017,7 @@ function onClickItem() {
 		elements.arrowNext.classList.add('hidden');
 	}
 
-	let bHasUpdate = (pluginDiv.lastChild.firstChild.lastChild.tagName === 'SPAN' && !pluginDiv.lastChild.firstChild.lastChild.classList.contains('hidden'));
+	// let bHasUpdate = (pluginDiv.lastChild.firstChild.lastChild.tagName === 'SPAN' && !pluginDiv.lastChild.firstChild.lastChild.classList.contains('hidden'));
 	
 	if ( (installed && installed.obj.version) || plugin.version ) {
 		elements.spanVersion.innerText = (installed && installed.obj.version ? installed.obj.version : plugin.version);
@@ -1072,7 +1060,7 @@ function onClickItem() {
 	else
 		elements.discussionLink.removeAttribute('href');
 
-	if (bHasUpdate) {
+	if (plugin.bHasUpdate && installed && !installed.removed) {
 		elements.btnUpdate.classList.remove('hidden');
 	} else {
 		elements.btnUpdate.classList.add('hidden');
