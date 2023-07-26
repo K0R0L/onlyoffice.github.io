@@ -219,9 +219,11 @@ window.addEventListener('message', function(message) {
 			if (!message.guid) {
 				// somethimes we can receive such message
 				if (!updateCount) {
-					checkNoUpdated(true);
-					toogleLoader(false);
+					// todo1
+					elements.btnUpdateAll.classList.add('hidden');
+					// checkNoUpdated(true);
 				}
+				toogleLoader(false);
 				return;
 			}
 			installed = findPlugin(false, message.guid);
@@ -241,9 +243,11 @@ window.addEventListener('message', function(message) {
 				pluginDiv.lastChild.firstChild.lastChild.remove();
 
 			if (!updateCount) {
-				checkNoUpdated(true);
-				toogleLoader(false);
+				// todo1
+				elements.btnUpdateAll.classList.add('hidden');
+				// checkNoUpdated(true);
 			}
+			toogleLoader(false);
 			break;
 		case 'Removed':
 			if (!message.guid) {
@@ -775,8 +779,9 @@ function createPluginDiv(plugin, bInstalled) {
 	}
 
 	let bRemoved = (installed && installed.removed);
-	if (plugin.bHasUpdate && !bRemoved)
-		elements.btnUpdateAll.classList.remove('hidden');
+	// todo1
+	// if (plugin.bHasUpdate && !bRemoved)
+	// 	elements.btnUpdateAll.classList.remove('hidden');
 	
 	let variation = plugin.variations[0];
 	let name = (bTranslate && plugin.nameLocale && plugin.nameLocale[shortLang]) ? plugin.nameLocale[shortLang] : plugin.name;
@@ -887,7 +892,8 @@ function onClickUpdate(target) {
 	}
 	let guid = target.parentElement.parentElement.parentElement.getAttribute('data-guid');
 	let plugin = findPlugin(true, guid);
-	updateCount++;
+	// todo1
+	// updateCount++;
 	let message = {
 		type : 'update',
 		url : plugin.url,
@@ -937,7 +943,8 @@ function onClickUpdateAll() {
 	let arr = allPlugins.filter(function(el) {
 		return el.bHasUpdate;
 	});
-	updateCount = arr.length;
+	// todo1
+	// updateCount = arr.length;
 	arr.forEach(function(plugin){
 		let message = {
 			type : 'update',
@@ -1017,6 +1024,7 @@ function onClickItem() {
 		elements.arrowNext.classList.add('hidden');
 	}
 
+	// todo1
 	// let bHasUpdate = (pluginDiv.lastChild.firstChild.lastChild.tagName === 'SPAN' && !pluginDiv.lastChild.firstChild.lastChild.classList.contains('hidden'));
 	
 	if ( (installed && installed.obj.version) || plugin.version ) {
@@ -1793,6 +1801,8 @@ function checkUpdate() {
 };
 
 function checkNoUpdated(bRemove) {
+	// todo1
+	return;
 	// todo it's a temp solution. We will change a work with updation in the feature.
 	if ( (!elements.btnUpdateAll.classList.contains('hidden') && bRemove) || (elements.btnUpdateAll.classList.contains('hidden') && !bRemove) ) {
 		let arr = document.getElementsByClassName('span_update');
