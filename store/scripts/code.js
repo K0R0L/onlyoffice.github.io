@@ -1025,8 +1025,8 @@ function onClickItem() {
 		slideIndex = 1;
 		showSlides(1);
 	} else {
-		elements.arrowPrev.classList.remove('hidden');
-		elements.arrowNext.classList.remove('hidden');
+		elements.arrowPrev.classList.add('hidden');
+		elements.arrowNext.classList.add('hidden');
 	}
 
 	let bHasUpdate = (pluginDiv.lastChild.firstChild.lastChild.tagName === 'SPAN' && !pluginDiv.lastChild.firstChild.lastChild.classList.contains('hidden'));
@@ -1782,7 +1782,6 @@ function parseRatingPage(data) {
 };
 
 function checkUpdate() {
-	console.log('checkUpdate');
 	installedPlugins.forEach(function(installed) {
 		const plugin = findPlugin(true, installed.guid);
 		if (plugin) {
