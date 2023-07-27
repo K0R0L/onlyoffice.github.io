@@ -941,7 +941,7 @@ function onClickUpdateAll() {
 	timeout = setTimeout(toogleLoader, 200, true, "Updating");
 	elements.btnUpdateAll.classList.add('hidden');
 	let arr = installedPlugins.filter(function(el) {
-		return el.bHasUpdate && !el.removed;
+		return el.obj.bHasUpdate && !el.removed;
 	});
 	// todo1
 	console.log(arr);
