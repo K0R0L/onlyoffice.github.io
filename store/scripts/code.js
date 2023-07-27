@@ -1676,10 +1676,14 @@ function changeAfterInstallOrRemove(bInstall, guid, bHasLocal) {
 
 	let bHasUpdate = (btn.parentNode.firstChild.lastChild.tagName === 'SPAN');
 	if (bHasUpdate) {
-		if (bInstall)
+		if (bInstall) {
 			btn.parentNode.firstChild.lastChild.classList.remove('hidden');
-		else
+			updateCount++;
+		}
+		else {
 			btn.parentNode.firstChild.lastChild.classList.add('hidden');
+			updateCount--;
+		}
 	}
 
 	if (!elements.divSelected.classList.contains('hidden')) {
@@ -1787,7 +1791,8 @@ function checkUpdate() {
 				const lastV = getPluginVersion(plugin.version);
 				if (lastV > installedV) {
 					plugin.bHasUpdate = installed.obj.bHasUpdate = true;
-					updateCount++;
+					if (!installed.removed)
+						updateCount++;
 				} else {
 					plugin.bHasUpdate = installed.obj.bHasUpdate = false;
 				}
@@ -1802,6 +1807,11 @@ function checkUpdate() {
 
 function checkNoUpdated(bRemove) {
 	// todo1
+	if (updateCount) {
+		elements.btnUpdateAll.classList.remove('hidden');
+	} else {
+		elements.btnUpdateAll.classList.add('hidden');
+	}
 	return;
 	// todo it's a temp solution. We will change a work with updation in the feature.
 	if ( (!elements.btnUpdateAll.classList.contains('hidden') && bRemove) || (elements.btnUpdateAll.classList.contains('hidden') && !bRemove) ) {
