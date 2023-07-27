@@ -7,7 +7,7 @@
         "de": "OCR"
     },
     "guid": "asc.{440EBF13-9B19-4BD8-8621-05200E58140B}",
-    "version": "1.0.0",
+    "version": "1.1.0",
 
     "variations": [
         {
@@ -64,8 +64,9 @@
 
             "isViewer": false,
             "EditorsSupport": [ "word" ],
-            "isVisual": true,
-            "isModal": true,
+            "isVisual": false,
+            "isModal": false,
+			"isSystem": true,
             "isInsideMode": false,
             "initDataType": "none",
             "isUpdateOleOnResize": false,
