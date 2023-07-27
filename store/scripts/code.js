@@ -940,10 +940,11 @@ function onClickUpdateAll() {
 	clearTimeout(timeout);
 	timeout = setTimeout(toogleLoader, 200, true, "Updating");
 	elements.btnUpdateAll.classList.add('hidden');
-	let arr = allPlugins.filter(function(el) {
-		return el.bHasUpdate;
+	let arr = installedPlugins.filter(function(el) {
+		return el.bHasUpdate && !el.removed;
 	});
 	// todo1
+	console.log(arr);
 	// updateCount = arr.length;
 	arr.forEach(function(plugin){
 		let message = {
