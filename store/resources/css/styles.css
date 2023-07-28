@@ -123,7 +123,7 @@ label.header {
 	flex-wrap: wrap;
 	margin-right: 5px;
 	margin-left: 20px;
-	justify-content: center;
+	/* justify-content: center; */
 }
 
 .div_item {
