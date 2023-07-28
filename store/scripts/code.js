@@ -30,6 +30,7 @@ let searchTimeout = null;                                            // timeot f
 let founded = [];                                                    // last founded elemens (for not to redraw if a result is the same)
 let catFiltred = [];                                                 // plugins are filtred by caterogy (used for search)
 let updateCount = 0;                                                 // counter for plugins in updating process
+let bUpdateAll = false;                                              // flag that we update all pluins
 let discussionCount = 0;                                             // counter for loading plugin`s discussions
 let allPlugins = [];                                                 // list of all plugins from config
 let installedPlugins;                                                // list of intalled plugins
@@ -218,8 +219,10 @@ window.addEventListener('message', function(message) {
 			updateCount--;
 			if (!message.guid) {
 				// somethimes we can receive such message
-				checkNoUpdated();
-				toogleLoader(false);
+				if ( !bUpdateAll || ( bUpdateAll && !updateCount ) ) {
+					checkNoUpdated();
+					toogleLoader(false);
+				}
 				return;
 			}
 			installed = findPlugin(false, message.guid);
@@ -238,8 +241,10 @@ window.addEventListener('message', function(message) {
 			if (pluginDiv)
 				pluginDiv.lastChild.firstChild.lastChild.remove();
 
-			checkNoUpdated();
-			toogleLoader(false);
+			if ( !bUpdateAll || ( bUpdateAll && !updateCount ) ) {
+				checkNoUpdated();
+				toogleLoader(false);
+			}
 			break;
 		case 'Removed':
 			if (!message.guid) {
@@ -924,6 +929,7 @@ function needBackupPlugin(guid) {
 }
 
 function onClickUpdateAll() {
+	bUpdateAll = true;
 	clearTimeout(timeout);
 	timeout = setTimeout(toogleLoader, 200, true, "Updating");
 	// now it will be in "updated" message
