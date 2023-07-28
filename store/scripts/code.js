@@ -16,7 +16,7 @@
  *
  */
 
-const version = '1.0.2';                                             // version of store (will change it when update something in store)
+const version = '1.0.3';                                             // version of store (will change it when update something in store)
 let start = Date.now();
 let isPluginLoading = false;                                         // flag plugins loading
 const isDesktop = window.AscDesktopEditor !== undefined;             // desktop detecting
@@ -24,10 +24,13 @@ let isOnline = true;                                                 // flag int
 isDesktop && checkInternet();                                        // check internet connection (only for desktop)
 let interval = null;                                                 // interval for checking internet connection (if it doesn't work on launch)
 const OOMarketplaceUrl = 'https://onlyoffice.github.io/';            // url to oficial store (for local version store in desktop)
+const OOIO = 'https://github.com/ONLYOFFICE/onlyoffice.github.io/';  // url to oficial github repository (for links and discussions)
+const discussionsUrl = OOIO + 'discussions/';                        // discussions url
 let searchTimeout = null;                                            // timeot for search
 let founded = [];                                                    // last founded elemens (for not to redraw if a result is the same)
 let catFiltred = [];                                                 // plugins are filtred by caterogy (used for search)
 let updateCount = 0;                                                 // counter for plugins in updating process
+let bUpdateAll = false;                                              // flag that we update all pluins
 let discussionCount = 0;                                             // counter for loading plugin`s discussions
 let allPlugins = [];                                                 // list of all plugins from config
 let installedPlugins;                                                // list of intalled plugins
@@ -68,7 +71,6 @@ const languages = [                                                  // list of 
 	['ru-RU', 'ru', 'Russian'],
 	['zh-ZH', 'zh', 'Chinese']
 ];
-const discussionsUrl = 'https://github.com/AlexeyMatveev686/onlyoffice.github.io/discussions/'; // discussions url
 const messages = {
 	versionWarning: 'This plugin will only work in a newer version of the editor.',
 	linkManually: 'Install plugin manually',
@@ -217,8 +219,8 @@ window.addEventListener('message', function(message) {
 			updateCount--;
 			if (!message.guid) {
 				// somethimes we can receive such message
-				if (!updateCount) {
-					checkNoUpdated(true);
+				if ( !bUpdateAll || ( bUpdateAll && !updateCount ) ) {
+					checkNoUpdated();
 					toogleLoader(false);
 				}
 				return;
@@ -228,6 +230,7 @@ window.addEventListener('message', function(message) {
 
 			installed.obj.version = plugin.version;
 			plugin.bHasUpdate = false;
+			installed.obj.bHasUpdate = false;
 
 			if (!elements.divSelected.classList.contains('hidden')) {
 				this.document.getElementById('btn_update').classList.add('hidden');
@@ -238,8 +241,8 @@ window.addEventListener('message', function(message) {
 			if (pluginDiv)
 				pluginDiv.lastChild.firstChild.lastChild.remove();
 
-			if (!updateCount) {
-				checkNoUpdated(true);
+			if ( !bUpdateAll || ( bUpdateAll && !updateCount ) ) {
+				checkNoUpdated();
 				toogleLoader(false);
 			}
 			break;
@@ -762,31 +765,17 @@ function createPluginDiv(plugin, bInstalled) {
 		plugin = findPlugin(true, plugin.guid);
 	}
 
-	let bCheckUpdate = true;
 	if (!plugin) {
 		plugin = installed.obj;
-		bCheckUpdate = false;
 	}
 
 	let bNotAvailable = false;
 	const minV = (plugin.minVersion ? getPluginVersion(plugin.minVersion) : -1);
 	if (minV > editorVersion) {
-		bCheckUpdate = false;
 		bNotAvailable = true;
 	}
 
-	let bHasUpdate = false;
 	let bRemoved = (installed && installed.removed);
-	if (bCheckUpdate && installed && plugin) {
-		const installedV = getPluginVersion(installed.obj.version);
-		const lastV = getPluginVersion(plugin.version);
-		if (lastV > installedV) {
-			bHasUpdate = true;
-			plugin.bHasUpdate = true;
-			if (!bRemoved)
-				elements.btnUpdateAll.classList.remove('hidden');
-		}
-	}
 	
 	let variation = plugin.variations[0];
 	let name = (bTranslate && plugin.nameLocale && plugin.nameLocale[shortLang]) ? plugin.nameLocale[shortLang] : plugin.name;
@@ -806,7 +795,7 @@ function createPluginDiv(plugin, bInstalled) {
 								? '<div class="flex div_rating_card"> <div class="div_rating"> <div class="stars_grey"></div> <div class="stars_orange" style="width:' + plugin.rating.percent + ';"></div> </div> <span style="margin-left: 5px;">' + plugin.rating.total + '</span> </div>'
 								: '<div class="flex div_rating_card"> <div class="div_rating"> <div class="stars_grey"></div> <div class="stars_orange" style="width:0;"></div> </div> <span style="margin-left: 5px;"></span> </div>'
 							) +
-							(bHasUpdate
+							(plugin.bHasUpdate
 								? '<span class="span_update ' + (!bRemoved ? "" : "hidden") + '">' + getTranslated("Update") + '</span>'
 								: '<div></div>'
 							) +
@@ -897,7 +886,6 @@ function onClickUpdate(target) {
 	}
 	let guid = target.parentElement.parentElement.parentElement.getAttribute('data-guid');
 	let plugin = findPlugin(true, guid);
-	updateCount++;
 	let message = {
 		type : 'update',
 		url : plugin.url,
@@ -941,13 +929,21 @@ function needBackupPlugin(guid) {
 }
 
 function onClickUpdateAll() {
+	bUpdateAll = true;
 	clearTimeout(timeout);
 	timeout = setTimeout(toogleLoader, 200, true, "Updating");
-	elements.btnUpdateAll.classList.add('hidden');
-	let arr = allPlugins.filter(function(el) {
-		return el.bHasUpdate;
-	});
-	updateCount = arr.length;
+	// now it will be in "updated" message
+	// elements.btnUpdateAll.classList.add('hidden');
+	let arr = [];
+	for (let index = 0; index < installedPlugins.length; index++) {
+		let installed = installedPlugins[index];
+		if (installed.obj.bHasUpdate && !installed.removed) {
+			let pl = findPlugin(true, installed.guid);
+			if (pl)
+				arr.push(pl)
+		}
+
+	}
 	arr.forEach(function(plugin){
 		let message = {
 			type : 'update',
@@ -1023,11 +1019,9 @@ function onClickItem() {
 		slideIndex = 1;
 		showSlides(1);
 	} else {
-		elements.arrowPrev.classList.remove('hidden');
-		elements.arrowNext.classList.remove('hidden');
+		elements.arrowPrev.classList.add('hidden');
+		elements.arrowNext.classList.add('hidden');
 	}
-
-	let bHasUpdate = (pluginDiv.lastChild.firstChild.lastChild.tagName === 'SPAN' && !pluginDiv.lastChild.firstChild.lastChild.classList.contains('hidden'));
 	
 	if ( (installed && installed.obj.version) || plugin.version ) {
 		elements.spanVersion.innerText = (installed && installed.obj.version ? installed.obj.version : plugin.version);
@@ -1053,7 +1047,7 @@ function onClickItem() {
 		elements.divLanguages.classList.add('hidden');
 	}
 
-	let pluginUrl = plugin.baseUrl.replace('https://onlyoffice.github.io/', 'https://github.com/ONLYOFFICE/onlyoffice.github.io/tree/master/');
+	let pluginUrl = plugin.baseUrl.replace(OOMarketplaceUrl, (OOIO + 'tree/master/') );
 	
 	// TODO problem with plugins icons (different margin from top)
 	elements.divSelected.setAttribute('data-guid', guid);
@@ -1070,7 +1064,7 @@ function onClickItem() {
 	else
 		elements.discussionLink.removeAttribute('href');
 
-	if (bHasUpdate) {
+	if (plugin.bHasUpdate && installed && !installed.removed) {
 		elements.btnUpdate.classList.remove('hidden');
 	} else {
 		elements.btnUpdate.classList.add('hidden');
@@ -1350,6 +1344,7 @@ function showMarketplace() {
 	// show main window to user
 	if (!isPluginLoading && !isTranslationLoading && !isFrameLoading && installedPlugins) {
 		createSelect();
+		checkUpdate();
 		if (isOnline)
 			showListofPlugins(isOnline);
 		else {
@@ -1530,7 +1525,7 @@ function toogleView(current, oldEl, text, bAll, bForce) {
 				filterByCategory(document.getElementById('select_categories').value);
 			}
 		}
-		elements.linkNewPlugin.href = bAll ? "https://github.com/ONLYOFFICE/onlyoffice.github.io/pulls" : "https://api.onlyoffice.com/plugin/installation";
+		elements.linkNewPlugin.href = bAll ? (OOIO + "pulls") : "https://api.onlyoffice.com/plugin/installation";
 
 		if (isDesktop && !bAll) {
 			elements.linkNewPlugin.href = "#";
@@ -1677,10 +1672,14 @@ function changeAfterInstallOrRemove(bInstall, guid, bHasLocal) {
 
 	let bHasUpdate = (btn.parentNode.firstChild.lastChild.tagName === 'SPAN');
 	if (bHasUpdate) {
-		if (bInstall)
+		if (bInstall) {
 			btn.parentNode.firstChild.lastChild.classList.remove('hidden');
-		else
+			updateCount++;
+		}
+		else {
 			btn.parentNode.firstChild.lastChild.classList.add('hidden');
+			updateCount--;
+		}
 	}
 
 	if (!elements.divSelected.classList.contains('hidden')) {
@@ -1778,23 +1777,36 @@ function parseRatingPage(data) {
 	}
 };
 
-function checkNoUpdated(bRemove) {
-	// todo it's a temp solution. We will change a work with updation in the feature.
-	if ( (!elements.btnUpdateAll.classList.contains('hidden') && bRemove) || (elements.btnUpdateAll.classList.contains('hidden') && !bRemove) ) {
-		let arr = document.getElementsByClassName('span_update');
-		let bHasNoUpdated = false;
-		for (let index = 0; index < arr.length; index++) {
-			if (!arr[index].classList.contains('hidden')) {
-				bHasNoUpdated = true;
-				break;
+function checkUpdate() {
+	installedPlugins.forEach(function(installed) {
+		const plugin = findPlugin(true, installed.guid);
+		if (plugin) {
+			const minV = (plugin.minVersion ? getPluginVersion(plugin.minVersion) : -1);
+			if (minV < editorVersion) {
+				const installedV = getPluginVersion(installed.obj.version);
+				const lastV = getPluginVersion(plugin.version);
+				if (lastV > installedV) {
+					plugin.bHasUpdate = installed.obj.bHasUpdate = true;
+					if (!installed.removed)
+						updateCount++;
+				} else {
+					plugin.bHasUpdate = installed.obj.bHasUpdate = false;
+				}
+			} else {
+				plugin.bHasUpdate = installed.obj.bHasUpdate = false;
 			}
 		}
-		if (bHasNoUpdated) {
-			elements.btnUpdateAll.classList.remove('hidden');
-		} else {
-			elements.btnUpdateAll.classList.add('hidden');
-		}
+	});
+	checkNoUpdated();
+};
+
+function checkNoUpdated() {
+	if (updateCount) {
+		elements.btnUpdateAll.classList.remove('hidden');
+	} else {
+		elements.btnUpdateAll.classList.add('hidden');
 	}
+	return;
 };
 
 function plusSlides(n) {
