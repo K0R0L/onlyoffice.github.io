@@ -930,7 +930,7 @@ function onClickUpdateAll() {
 	// elements.btnUpdateAll.classList.add('hidden');
 	let arr = installedPlugins.map(function(el) {
 		if (el.obj.bHasUpdate && !el.removed)
-			return el.obj;
+			return findPlugin(true, el.guid);
 	});
 	arr.forEach(function(plugin){
 		let message = {
