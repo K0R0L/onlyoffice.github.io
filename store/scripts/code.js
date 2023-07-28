@@ -928,10 +928,16 @@ function onClickUpdateAll() {
 	timeout = setTimeout(toogleLoader, 200, true, "Updating");
 	// now it will be in "updated" message
 	// elements.btnUpdateAll.classList.add('hidden');
-	let arr = installedPlugins.map(function(el) {
-		if (el.obj.bHasUpdate && !el.removed)
-			return findPlugin(true, el.guid);
-	});
+	let arr = [];
+	for (let index = 0; index < installedPlugins.length; index++) {
+		let installed = installedPlugins[index];
+		if (installed.obj.bHasUpdate && !installed.removed) {
+			let pl = findPlugin(true, installed.guid);
+			if (pl)
+				arr.push(pl)
+		}
+
+	}
 	arr.forEach(function(plugin){
 		let message = {
 			type : 'update',
