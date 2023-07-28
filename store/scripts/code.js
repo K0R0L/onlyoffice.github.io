@@ -218,11 +218,7 @@ window.addEventListener('message', function(message) {
 			updateCount--;
 			if (!message.guid) {
 				// somethimes we can receive such message
-				if (!updateCount) {
-					// todo1
-					elements.btnUpdateAll.classList.add('hidden');
-					// checkNoUpdated(true);
-				}
+				checkNoUpdated();
 				toogleLoader(false);
 				return;
 			}
@@ -242,11 +238,7 @@ window.addEventListener('message', function(message) {
 			if (pluginDiv)
 				pluginDiv.lastChild.firstChild.lastChild.remove();
 
-			if (!updateCount) {
-				// todo1
-				elements.btnUpdateAll.classList.add('hidden');
-				// checkNoUpdated(true);
-			}
+			checkNoUpdated();
 			toogleLoader(false);
 			break;
 		case 'Removed':
@@ -779,9 +771,6 @@ function createPluginDiv(plugin, bInstalled) {
 	}
 
 	let bRemoved = (installed && installed.removed);
-	// todo1
-	// if (plugin.bHasUpdate && !bRemoved)
-	// 	elements.btnUpdateAll.classList.remove('hidden');
 	
 	let variation = plugin.variations[0];
 	let name = (bTranslate && plugin.nameLocale && plugin.nameLocale[shortLang]) ? plugin.nameLocale[shortLang] : plugin.name;
@@ -892,8 +881,6 @@ function onClickUpdate(target) {
 	}
 	let guid = target.parentElement.parentElement.parentElement.getAttribute('data-guid');
 	let plugin = findPlugin(true, guid);
-	// todo1
-	// updateCount++;
 	let message = {
 		type : 'update',
 		url : plugin.url,
@@ -939,14 +926,12 @@ function needBackupPlugin(guid) {
 function onClickUpdateAll() {
 	clearTimeout(timeout);
 	timeout = setTimeout(toogleLoader, 200, true, "Updating");
-	elements.btnUpdateAll.classList.add('hidden');
+	// now it will be in "updated" message
+	// elements.btnUpdateAll.classList.add('hidden');
 	let arr = installedPlugins.map(function(el) {
 		if (el.obj.bHasUpdate && !el.removed)
 			return el.obj;
 	});
-	// todo1
-	console.log(arr);
-	// updateCount = arr.length;
 	arr.forEach(function(plugin){
 		let message = {
 			type : 'update',
@@ -1025,9 +1010,6 @@ function onClickItem() {
 		elements.arrowPrev.classList.add('hidden');
 		elements.arrowNext.classList.add('hidden');
 	}
-
-	// todo1
-	// let bHasUpdate = (pluginDiv.lastChild.firstChild.lastChild.tagName === 'SPAN' && !pluginDiv.lastChild.firstChild.lastChild.classList.contains('hidden'));
 	
 	if ( (installed && installed.obj.version) || plugin.version ) {
 		elements.spanVersion.innerText = (installed && installed.obj.version ? installed.obj.version : plugin.version);
@@ -1803,34 +1785,16 @@ function checkUpdate() {
 			}
 		}
 	});
-	if (updateCount)
-		elements.btnUpdateAll.classList.remove('hidden');
+	checkNoUpdated();
 };
 
-function checkNoUpdated(bRemove) {
-	// todo1
+function checkNoUpdated() {
 	if (updateCount) {
 		elements.btnUpdateAll.classList.remove('hidden');
 	} else {
 		elements.btnUpdateAll.classList.add('hidden');
 	}
 	return;
-	// todo it's a temp solution. We will change a work with updation in the feature.
-	if ( (!elements.btnUpdateAll.classList.contains('hidden') && bRemove) || (elements.btnUpdateAll.classList.contains('hidden') && !bRemove) ) {
-		let arr = document.getElementsByClassName('span_update');
-		let bHasNoUpdated = false;
-		for (let index = 0; index < arr.length; index++) {
-			if (!arr[index].classList.contains('hidden')) {
-				bHasNoUpdated = true;
-				break;
-			}
-		}
-		if (bHasNoUpdated) {
-			elements.btnUpdateAll.classList.remove('hidden');
-		} else {
-			elements.btnUpdateAll.classList.add('hidden');
-		}
-	}
 };
 
 function plusSlides(n) {
